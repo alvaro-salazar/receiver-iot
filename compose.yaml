@@ -1,0 +1,14 @@
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    container_name: timescaledb
+    environment:
+      POSTGRES_DB: iot_data_db
+      POSTGRES_USER: iot_db_user
+      POSTGRES_PASSWORD: a1b2c3d4
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+volumes:
+  timescale-data:
