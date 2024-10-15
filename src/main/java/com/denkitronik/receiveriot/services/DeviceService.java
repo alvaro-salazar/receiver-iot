@@ -17,16 +17,6 @@ public class DeviceService {
         this.deviceRepository = deviceRepository;
     }
 
-//    public Device getOrCreateDevice(User user, Location location) {
-//        return deviceRepository.findByUserAndLocation(user, location).orElseGet(() -> {
-//            Device newDevice = new Device();
-//            newDevice.setClientId(user.getUsername() + "_" + location.getCity()); // Puedes personalizar el nombre
-//            newDevice.setUser(user);
-//            newDevice.setLocation(location);
-//            return deviceRepository.save(newDevice);
-//        });
-//    }
-
     public Device getOrCreateDevice(String clientId, User user, Location location) {
         // Busca si ya existe un dispositivo con el clientId y la ubicación dadas
         Optional<Device> existingDevice = deviceRepository.findByClientIdAndLocation(clientId, location);

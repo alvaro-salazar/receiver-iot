@@ -7,21 +7,20 @@ import com.denkitronik.receiveriot.entities.Device;
 import com.denkitronik.receiveriot.entities.User;
 import com.denkitronik.receiveriot.services.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
+
 import javax.net.ssl.SSLSocketFactory;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.KeyStore;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -36,7 +35,7 @@ import java.util.Map;
 @Component
 public class MqttController {
 
-    private MqttClient client;                              // Cliente MQTT de Eclipse Paho
+    private MqttAsyncClient client;                         // Cliente MQTT de Eclipse Paho
     private final UserService userService;                  // Servicio de usuario
     private final LocationService locationService;          // Servicio de ubicación (ciudad, estado, país)
     private final MeasurementService measurementService;    // Servicio de medición (variable)
@@ -52,6 +51,10 @@ public class MqttController {
     private String username;
     @Value("${mqtt.password}")      // Lee de application.properties el valor de mqtt.password
     private String password;
+    @Value("${mqtt.qos}")           // Lee de application.properties el valor de mqtt.qos
+    private int qos;
+    @Value("${mqtt.topic}")         // Lee de application.properties el valor de mqtt.topic
+    private String topic;
 
 
     /**
@@ -80,18 +83,20 @@ public class MqttController {
         options.setAutomaticReconnect(true);
         options.setKeepAliveInterval(60);
         options.setConnectionTimeout(30);
-        options.setCleanSession(true);
+        options.setCleanSession(false);
         options.setSocketFactory(socketFactory);  // Configuración de TLS
 
-        client = new MqttClient(this.brokerUrl, this.clientId);
-        client.setCallback(new MqttCallback() {
+        // Crear el cliente MQTT con el ID, el broker URL y con persistencia en memoria
+        client = new MqttAsyncClient(this.brokerUrl, this.generateClientId(), new MemoryPersistence());
+        MqttCallback callback = new MqttCallback() {
+
             // Metodo que se ejecuta cuando se pierde la conexión
             @Override
             public void connectionLost(Throwable cause) {
                 logger.error("Conexión perdida: {}", cause.getMessage());
-                while (!client.isConnected()) {
-                    connect(options);
-                }
+                logger.info("Intento de reconexion al broker MQTT...");
+                connect(options, true); // Intentar reconectar
+                logger.info("Reconectado al broker MQTT");
             }
 
             // Metodo que se ejecuta cuando se recibe un mensaje
@@ -105,21 +110,30 @@ public class MqttController {
             public void deliveryComplete(IMqttDeliveryToken token) {
                 logger.info("Entrega completa");
             }
-        });
-
-        this.connect(options);
+        };
+        client.setCallback(callback);  // Establecer el callback
+        this.connect(options, false); // Conectar al broker MQTT
     }
 
     /**
      * Metodo que se encarga de conectar el cliente MQTT
      */
-    private void connect(MqttConnectOptions options) {
+    private void connect(MqttConnectOptions options, boolean reconnect) {
         try {
+            if (reconnect) {
+                logger.info("Reconectando al broker MQTT: {}", this.brokerUrl);
+                if (client.isConnected()) {
+                    logger.info("El cliente aun esta en estado conectado");
+                    IMqttToken disconnectToken = this.client.disconnect();
+                    disconnectToken.waitForCompletion(10000);
+                    logger.info("Desconexion exitosa");
+                }
+            }
             logger.info("Conectando al broker MQTT: {}", this.brokerUrl);
-            client.connect(options);
+            client.connect(options).waitForCompletion();
             logger.info("Conexión exitosa");
-            client.subscribe("+/+/+/+/+/+");
-            logger.info("Suscrito al tópico +/+/+/+/+");
+            client.subscribe(this.topic, this.qos);
+            logger.info("Suscrito al tópico: {}", this.topic);
         } catch (MqttException e) {
             logger.error("Error al conectar: {}", e.getMessage());
         }
@@ -127,7 +141,8 @@ public class MqttController {
 
     /**
      * Metodo que se encarga de procesar los mensajes recibidos
-     * @param topic Tópico del mensaje
+     *
+     * @param topic   Tópico del mensaje
      * @param message Mensaje MQTT
      */
     private void processMessage(String topic, MqttMessage message) {
@@ -135,7 +150,8 @@ public class MqttController {
         logger.info("Mensaje recibido: {}", payload);
 
         // Extraer datos del tópico
-        String[] topicData = topic.split("/");;
+        String[] topicData = topic.split("/");
+        ;
         String country = topicData[0];
         String state = topicData[1];
         String city = topicData[2];
@@ -175,6 +191,7 @@ public class MqttController {
 
     /**
      * Metodo que se encarga de configurar el contexto SSL con el certificado público de Let's Encrypt
+     *
      * @return SocketFactory configurado con el certificado de Let's Encrypt
      * @throws Exception Excepción en caso de error al cargar el certificado
      */
@@ -204,5 +221,20 @@ public class MqttController {
 
         return sslContext.getSocketFactory();
     }
-}
 
+    /**
+     * Metodo que se encarga de generar un ID de cliente único MQTT
+     *
+     * @return ID de cliente único
+     */
+    public String generateClientId() {
+        String hostname = "unknown";
+        try {
+            hostname = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            logger.error("Error al obtener el nombre del host: {}", e.getMessage());
+        }
+        long timestamp = System.currentTimeMillis();
+        return this.clientId + "-" + hostname + "-" + timestamp;
+    }
+}

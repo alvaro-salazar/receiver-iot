@@ -1,0 +1,132 @@
+name: CI Pipeline
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      checks: write  # Permitir la creación de checks de GitHub
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Install dependencies
+        run: mvn install -DskipTests
+
+      - name: Run Tests with Testcontainers
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: "true" # Opcional: deshabilita Ryuk si es necesario
+          DOCKER_HOST: tcp://localhost:2375
+        run: mvn test
+
+      - name: Upload Test Results
+        if: always()  # Este paso se ejecuta incluso si las pruebas fallan
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: target/surefire-reports
+
+      - name: Display Test Results
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results
+          path: target/surefire-reports/*.xml
+          reporter: java-junit
+  build-and-publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t alvarosalazar/receiver-iot:latest .
+          docker push alvarosalazar/receiver-iot:latest
+
+  deploy:
+    needs: build-and-publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify compose.yaml Exists
+        run: |
+          if [ ! -f compose.yaml ]; then
+          echo "Error: compose.yaml not found!"
+          exit 1
+          fi
+
+      - name: Create SSH Key File
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Create directory on EC2
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            mkdir -p ~/app-receiver-iot
+
+      - name: Add Host to known_hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy docker-compose.yml to EC2
+        env:
+         EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          scp -i ~/.ssh/id_rsa ./compose.yaml ubuntu@$EC2_HOST:~/app-receiver-iot/compose.yaml
+
+      - name: Run Docker Compose on EC2
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          command_timeout: 10m
+          script: |
+            cd ~/app-receiver-iot
+            sudo docker compose --profile app pull
+            sudo docker compose --profile app up -d          

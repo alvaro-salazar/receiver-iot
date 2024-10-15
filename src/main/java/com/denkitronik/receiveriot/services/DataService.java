@@ -18,6 +18,9 @@ public class DataService {
     }
 
     public void createData(float value, Device device, Measurement variable, ZonedDateTime time) {
+        if (device == null || variable == null || time == null) {
+            throw new IllegalArgumentException("Device, Measurement, and Timestamp cannot be null");
+        }
         DataEntity data = new DataEntity();
         data.setVariable_value(value);
         data.setDevice(device);

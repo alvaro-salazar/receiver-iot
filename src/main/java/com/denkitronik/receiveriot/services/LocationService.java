@@ -42,12 +42,18 @@ public class LocationService {
 
         // Realizar la solicitud GET a la API y obtener la respuesta en un Map
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-
+        double latitude;
+        double longitude;
         if (response != null) {
-            // Extraer latitud y longitud del Map
-            Double latitude = Double.parseDouble((String) response.get("latt"));
-            Double longitude = Double.parseDouble((String) response.get("longt"));
-
+            // Verificar si la respuesta contiene el mensaje: "Throttled! See geocode.xyz/pricing", si es así, asignar 0.0 a las coordenadas
+            if (((String) response.get("latt")).contains("Throttled")||((String) response.get("longt")).contains("Throttled")) {
+                latitude = 0.0;
+                longitude = 0.0;
+            } else {
+                // Extraer latitud y longitud de la respuesta
+                latitude = Double.parseDouble((String) response.get("latt"));
+                longitude = Double.parseDouble((String) response.get("longt"));
+            }
             // Crear un nuevo mapa con las coordenadas
             return Map.of("latitude", latitude, "longitude", longitude);
         }
