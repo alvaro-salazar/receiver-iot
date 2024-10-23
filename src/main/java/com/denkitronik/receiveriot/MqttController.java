@@ -147,7 +147,7 @@ public class MqttController {
      */
     private void processMessage(String topic, MqttMessage message) {
         String payload = new String(message.getPayload());
-        logger.info("Mensaje recibido: {}", payload);
+        logger.info("Mensaje recibido!!: {}", payload);
 
         // Extraer datos del tópico
         String[] topicData = topic.split("/");

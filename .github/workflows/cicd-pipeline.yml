@@ -31,18 +31,20 @@ jobs:
       - name: Install dependencies
         run: mvn install -DskipTests
 
-      - name: Run Tests with Testcontainers
+      - name: Run Tests with Testcontainers and Generate Coverage Report
         env:
           TESTCONTAINERS_RYUK_DISABLED: "true" # Opcional: deshabilita Ryuk si es necesario
           DOCKER_HOST: tcp://localhost:2375
-        run: mvn test
+        run: mvn test jacoco:report
 
-      - name: Upload Test Results
+      - name: Upload Test and Coverage Results
         if: always()  # Este paso se ejecuta incluso si las pruebas fallan
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: target/surefire-reports
+          path: |
+            target/surefire-reports
+            target/site/jacoco/jacoco.xml
 
       - name: Display Test Results
         uses: dorny/test-reporter@v1
@@ -50,6 +52,12 @@ jobs:
           name: Test Results
           path: target/surefire-reports/*.xml
           reporter: java-junit
+
+      - name: Upload Coverage to SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn sonar:sonar -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} -Dsonar.organization=${{ secrets.SONAR_ORG_KEY }} -Dsonar.host.url=https://sonarcloud.io -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+
   build-and-publish:
     needs: test
     runs-on: ubuntu-latest
