@@ -75,7 +75,7 @@ class DataServiceTests {
         dataEntity.setVariableValue(23.5f);
         dataEntity.setDevice(device);
         dataEntity.setVariable(measurement);
-        dataEntity.setBase_time(timestamp);
+        dataEntity.setBaseTime(timestamp);
     }
 
     @Test
@@ -95,7 +95,7 @@ class DataServiceTests {
         assertEquals(23.5f, savedData.getVariableValue());
         assertEquals(device, savedData.getDevice());
         assertEquals(measurement, savedData.getVariable());
-        assertEquals(timestamp, savedData.getBase_time());
+        assertEquals(timestamp, savedData.getBaseTime());
     }
 
     @Test

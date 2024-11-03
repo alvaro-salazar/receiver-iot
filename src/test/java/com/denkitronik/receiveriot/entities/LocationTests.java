@@ -59,6 +59,7 @@ class LocationTests {
         location.setId(1L);
         location.setCity("Bogotá");
 
-        assertNotNull(location.hashCode());
+        int hashCode = location.hashCode();
+        assertNotEquals(0, hashCode);
     }
 }
