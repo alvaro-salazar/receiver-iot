@@ -25,7 +25,7 @@ public class DataService {
         data.setVariableValue(value);
         data.setDevice(device);
         data.setVariable(variable);
-        data.setBase_time(time);
+        data.setBaseTime(time);
         dataRepository.save(data);
     }
 }

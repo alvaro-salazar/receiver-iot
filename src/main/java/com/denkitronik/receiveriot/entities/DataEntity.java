@@ -22,7 +22,7 @@ public class DataEntity {
     private float variableValue;
 
     @NotNull(message = "Base time cannot be null")
-    private ZonedDateTime base_time;
+    private ZonedDateTime baseTime;
 
     @NotNull(message = "Measurement cannot be null")
     @ManyToOne
@@ -38,7 +38,7 @@ public class DataEntity {
     public void prePersist() {
         this.unixTime = System.currentTimeMillis();
         ZoneId zoneId = ZoneId.of("America/Bogota");
-        this.setBase_time(ZonedDateTime.now(zoneId));
+        this.setBaseTime(ZonedDateTime.now(zoneId));
     }
 }
 

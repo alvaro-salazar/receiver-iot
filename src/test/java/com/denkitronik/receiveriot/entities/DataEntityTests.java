@@ -33,8 +33,8 @@ class DataEntityTests {
         assertTrue(dataEntity.getUnixTime() > 0, "unix_time debería ser mayor a 0");
 
         // Verificar que base_time fue inicializado correctamente con la zona horaria esperada
-        assertNotNull(dataEntity.getBase_time(), "base_time no debería ser nulo");
-        assertEquals(ZoneId.of("America/Bogota"), dataEntity.getBase_time().getZone(),
+        assertNotNull(dataEntity.getBaseTime(), "base_time no debería ser nulo");
+        assertEquals(ZoneId.of("America/Bogota"), dataEntity.getBaseTime().getZone(),
                 "La zona horaria debería ser America/Bogota");
     }
 
