@@ -50,6 +50,7 @@ class UserTests {
         user.setId(1L);
         user.setUsername("Test User");
 
-        assertNotNull(user.hashCode());
+        int hashCode = user.hashCode();
+        assertNotEquals(0, hashCode); // Verifica que el valor no sea 0
     }
 }
