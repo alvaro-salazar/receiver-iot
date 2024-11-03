@@ -82,7 +82,13 @@ class ReceiverIotApplicationTests {
      */
     @Test
     void mainMethodRunsWithoutExceptions() {
-        // Verifica que la llamada al método main no lance ninguna excepción
+        // Agregar un entorno de prueba sin conexión a la base de datos si es posible
+        assertDoesNotThrow(() -> {
+            System.setProperty("spring.datasource.url", "jdbc:h2:mem:testdb"); // Usa H2 en memoria
+            System.setProperty("spring.datasource.driverClassName", "org.h2.Driver");
+            System.setProperty("spring.jpa.database-platform", "org.hibernate.dialect.H2Dialect");
+            ReceiverIotApplication.main(new String[]{});
+        });
         assertDoesNotThrow(() -> ReceiverIotApplication.main(new String[]{}));
     }
 
