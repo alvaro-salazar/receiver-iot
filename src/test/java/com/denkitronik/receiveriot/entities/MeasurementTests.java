@@ -45,9 +45,10 @@ class MeasurementTests {
 
     @Test
     void testMeasurementHashCode() {
-        measurement.setId(1L);
-        measurement.setName("Temperature");
+        Measurement tempMeasurement = new Measurement();
+        tempMeasurement.setId(1L);
+        tempMeasurement.setName("Temperature");
 
-        assertNotNull(measurement.hashCode());
+        assertNotEquals(0, tempMeasurement.hashCode(), "Hash code should not be zero");
     }
 }
