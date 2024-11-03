@@ -59,7 +59,7 @@ public class LocationService {
         }
 
         // Lanzar una excepción si no se pudo obtener la respuesta
-        throw new RuntimeException("No se pudo obtener las coordenadas para la ciudad: " + city);
+        throw new IllegalStateException("No se pudo obtener las coordenadas para la ciudad: " + city);
     }
 
 }
