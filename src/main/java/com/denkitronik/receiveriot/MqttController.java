@@ -18,12 +18,17 @@ import jakarta.annotation.PostConstruct;
 
 import javax.net.ssl.SSLSocketFactory;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.SSLContext;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
@@ -72,7 +77,7 @@ public class MqttController {
      * Metodo de inicialización que se ejecuta al arrancar la aplicación
      */
     @PostConstruct
-    public void init() throws Exception {
+    public void init() throws CertificateException, KeyStoreException, MqttException, NoSuchAlgorithmException, IOException, KeyManagementException {
 
         // Cargar el certificado de Let's Encrypt para TLS
         SSLSocketFactory socketFactory = getSocketFactoryWithLetsEncrypt();
@@ -195,7 +200,7 @@ public class MqttController {
      * @return SocketFactory configurado con el certificado de Let's Encrypt
      * @throws Exception Excepción en caso de error al cargar el certificado
      */
-    private SSLSocketFactory getSocketFactoryWithLetsEncrypt() throws Exception {
+    private SSLSocketFactory getSocketFactoryWithLetsEncrypt() throws CertificateException, KeyStoreException, NoSuchAlgorithmException, IOException, KeyManagementException {
         // Cargar el certificado público de Let's Encrypt desde src/main/resources
         InputStream fis = getClass().getClassLoader().getResourceAsStream("isrgrootx1.pem");
 

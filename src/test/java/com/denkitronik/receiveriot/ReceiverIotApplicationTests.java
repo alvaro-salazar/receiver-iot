@@ -11,8 +11,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Clase de pruebas para la aplicación ReceiverIotApplication
@@ -77,6 +76,16 @@ class ReceiverIotApplicationTests {
         // Verifica que el contexto de la aplicación se cargue correctamente
         assertNotNull(applicationContext, "El contexto de la aplicación no debería ser nulo");
     }
+
+    /**
+     * Prueba que verifica que el método main de la aplicación se ejecute sin lanzar excepciones.
+     */
+    @Test
+    void mainMethodRunsWithoutExceptions() {
+        // Verifica que la llamada al método main no lance ninguna excepción
+        assertDoesNotThrow(() -> ReceiverIotApplication.main(new String[]{}));
+    }
+
 
     /**
      * Prueba que verifica que los servicios de la aplicación se hayan mapeado correctamente
