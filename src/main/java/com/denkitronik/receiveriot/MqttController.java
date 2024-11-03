@@ -155,8 +155,7 @@ public class MqttController {
         logger.info("Mensaje recibido!!: {}", payload);
 
         // Extraer datos del tópico
-        String[] topicData = topic.split("/");
-        ;
+        String[] topicData = topic.split("/");        
         String country = topicData[0];
         String state = topicData[1];
         String city = topicData[2];

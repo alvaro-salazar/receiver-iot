@@ -18,7 +18,7 @@ public class DataEntity {
 
     @Id
     @Column(name = "unix_time", nullable = false)
-    private Long unix_time;
+    private Long unixTime;
     private float variableValue;
 
     @NotNull(message = "Base time cannot be null")
@@ -36,7 +36,7 @@ public class DataEntity {
 
     @PrePersist
     public void prePersist() {
-        this.unix_time = System.currentTimeMillis();
+        this.unixTime = System.currentTimeMillis();
         ZoneId zoneId = ZoneId.of("America/Bogota");
         this.setBase_time(ZonedDateTime.now(zoneId));
     }
