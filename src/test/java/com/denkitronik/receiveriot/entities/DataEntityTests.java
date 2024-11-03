@@ -29,8 +29,8 @@ class DataEntityTests {
         dataEntity.prePersist();
 
         // Verificar que el unix_time fue inicializado
-        assertNotNull(dataEntity.getUnix_time(), "unix_time no debería ser nulo");
-        assertTrue(dataEntity.getUnix_time() > 0, "unix_time debería ser mayor a 0");
+        assertNotNull(dataEntity.getUnixTime(), "unix_time no debería ser nulo");
+        assertTrue(dataEntity.getUnixTime() > 0, "unix_time debería ser mayor a 0");
 
         // Verificar que base_time fue inicializado correctamente con la zona horaria esperada
         assertNotNull(dataEntity.getBase_time(), "base_time no debería ser nulo");
