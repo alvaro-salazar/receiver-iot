@@ -2,7 +2,6 @@ package com.denkitronik.receiveriot.repositories;
 
 import com.denkitronik.receiveriot.entities.Location;
 import com.denkitronik.receiveriot.entities.Device;
-import com.denkitronik.receiveriot.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
