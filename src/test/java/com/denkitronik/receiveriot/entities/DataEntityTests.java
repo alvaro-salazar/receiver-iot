@@ -62,10 +62,10 @@ class DataEntityTests {
 
     @Test
     void testVariableValue() {
-        dataEntity.setVariable_value(10.5f);
+        dataEntity.setVariableValue(10.5f);
 
         // Verificar que el valor de la variable se estableció correctamente
-        assertEquals(10.5f, dataEntity.getVariable_value(), 0.001,
+        assertEquals(10.5f, dataEntity.getVariableValue(), 0.001,
                 "El valor de la variable debería ser 10.5");
     }
 }

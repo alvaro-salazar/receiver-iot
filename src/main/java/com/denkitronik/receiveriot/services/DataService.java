@@ -22,7 +22,7 @@ public class DataService {
             throw new IllegalArgumentException("Device, Measurement, and Timestamp cannot be null");
         }
         DataEntity data = new DataEntity();
-        data.setVariable_value(value);
+        data.setVariableValue(value);
         data.setDevice(device);
         data.setVariable(variable);
         data.setBase_time(time);

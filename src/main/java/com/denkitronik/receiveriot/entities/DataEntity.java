@@ -19,7 +19,7 @@ public class DataEntity {
     @Id
     @Column(name = "unix_time", nullable = false)
     private Long unix_time;
-    private float variable_value;
+    private float variableValue;
 
     @NotNull(message = "Base time cannot be null")
     private ZonedDateTime base_time;

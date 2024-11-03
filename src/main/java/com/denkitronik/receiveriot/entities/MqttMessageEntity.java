@@ -12,8 +12,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * Entidad que representa un mensaje MQTT recibido
- * TODO: Usar esta entidad
+ * Entidad que representa un mensaje MQTT recibido por el broker.
  */
 @Setter
 @Getter

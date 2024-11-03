@@ -72,7 +72,7 @@ class DataServiceTests {
 
         // Crear entidad de datos
         dataEntity = new DataEntity();
-        dataEntity.setVariable_value(23.5f);
+        dataEntity.setVariableValue(23.5f);
         dataEntity.setDevice(device);
         dataEntity.setVariable(measurement);
         dataEntity.setBase_time(timestamp);
@@ -92,7 +92,7 @@ class DataServiceTests {
 
         // Verificar los valores de la entidad guardada
         DataEntity savedData = dataCaptor.getValue();
-        assertEquals(23.5f, savedData.getVariable_value());
+        assertEquals(23.5f, savedData.getVariableValue());
         assertEquals(device, savedData.getDevice());
         assertEquals(measurement, savedData.getVariable());
         assertEquals(timestamp, savedData.getBase_time());
