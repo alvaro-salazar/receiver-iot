@@ -108,3 +108,4 @@ Las contribuciones son bienvenidas. Si deseas colaborar en el proyecto, abre un 
 ## Licencia
 
 Este proyecto está bajo la licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más información.
+(c) 2025
